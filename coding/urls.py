@@ -14,10 +14,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+
 
 from . import views
 
 urlpatterns = [
+    re_path('sudoku/solve_sudoku/', views.ajax_sudoku, name='solve_sudoku'),
+    path('sudoku/', views.sudoku, name='sudoku'),
     path('', views.site_index, name='site_index'),
 ]

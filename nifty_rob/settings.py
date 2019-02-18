@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-from .base import get_env_variable
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '*svo$yt2c-z6jdyg%qmyk^wi2)lo-comf)1yvg5mq!oncseo^z'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'this-is-a-pointless-dev-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -86,10 +85,9 @@ WSGI_APPLICATION = 'nifty_rob.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # 'NAME': get_env_variable('DATABASE_NAME'),
-        # 'USER': get_env_variable('DATABASE_USER'),
-        # 'PASSWORD': get_env_variable('DATABASE_PASSWORD'),
-
+        'NAME': os.environ.get('DATABASE_NAME', ''),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
         'HOST': '',
         'PORT': '',
     }

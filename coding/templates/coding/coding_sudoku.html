@@ -1,0 +1,235 @@
+{% extends 'coding/coding_base.html' %}
+
+{% block content %}
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+         <script>
+            function entry(e, item){
+                let charval= String.fromCharCode(e.keyCode);
+                if(((isNaN(charval)) && (e.which != 8) && (e.which != 9)) ||
+                    (item.value.length > 0 && (e.which != 8) && (e.which != 9))){ // BSP KB code is 8
+                    return false;
+                }
+
+                return true;
+            }
+            function moveCell(e, item) {
+                return false;
+                let charval= String.fromCharCode(e.keyCode);
+                if (entry(e, item)){
+                    return false
+                }
+                var currentCell = item.parentElement.getAttribute("id");
+                var num = Number(currentCell.slice(-1));
+                num += 1;
+                currentCell = currentCell.slice(0, currentCell.length - 1);
+                currentCell = currentCell + num.toString();
+                document.getElementById(currentCell).firstChild.focus();
+            }
+            function clearBoard() {
+                let board = document.getElementsByClassName("cell_input");
+                for (var i=0; i<board.length; i++) {
+                    board[i].value = "";
+                }
+                document.getElementById("sudoku_iters").innerText = '--';
+
+            }
+            function populateBoard() {
+                let board = document.getElementsByClassName("cell_input");
+                let solution = "{{ sudoku.sudoku }}";
+                {#alert(solution);#}
+                {#alert(parsed);#}
+                {#let solution = document.getElementById("num-val").value;#}
+                for (var i = 0; i<board.length; i++) {
+                    {#alert(solution.toString().charAt(i));#}
+                    board[i].value = solution.charAt(i);
+                }
+
+            }
+            function ajaxPopulateBoard(solution) {
+                let board = document.getElementsByClassName("cell_input");
+                {#alert(solution);#}
+                {#alert(parsed);#}
+                {#let solution = document.getElementById("num-val").value;#}
+                for (var i = 0; i<board.length; i++) {
+                    {#alert(solution.toString().charAt(i));#}
+                    board[i].value = solution.charAt(i);
+                }
+
+            }
+            function parseBoard() {
+                let board = document.getElementsByClassName("cell_input");
+                var nums = "";
+                for (var i = 0; i<board.length; i++) {
+                    if (board[i].value.toString() === "") {
+                        nums += "-";
+                    } else {
+                        nums += board[i].value.toString();
+                    }
+                }
+                document.getElementById('nums').value = nums;
+                return nums;
+            }
+            function setVal() {
+                let board = document.getElementsByClassName("cell_input");
+                for (var i = 0; i<board.length; i++) {
+                    board[i].value = 3;
+                }
+            }
+
+            $(document).ready(function(){
+                $.ajaxSetup({
+                      headers: { "X-CSRFToken": '{{csrf_token}}' }
+                    });
+                $("#solve_btn").click(function(e) {
+                    e.preventDefault();
+                    parseBoard();
+                    $.ajax({
+                        url: "sudoku/solve_sudoku/",
+                        {#url: '{% url "solve_sudoku" %}',#}
+                        type: 'POST',
+                        data: {
+                            'nums': parseBoard(),
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        {#dataType: "JSON",#}
+                        success: function(data) {
+                            ajaxPopulateBoard(data.nums);
+                            if (data.possible === true) {
+                                document.getElementById("sudoku_iters").innerText = data.iterations.toString() + ' iterations';
+                            } else {
+                                document.getElementById("sudoku_iters").innerText = 'Puzzle is not possible';
+                            }
+                        },
+                        error: function(xhr, textStatus, err) {
+                            console.log("readyState: " + xhr.readyState);
+                            console.log("responseText: "+ xhr.responseText);
+                            console.log("status: " + xhr.status);
+                            console.log("text status: " + textStatus);
+                            console.log("error: " + err);
+                        }
+                      });
+                });
+            });
+        </script>
+{#    <body onload="populateBoard()"></body>#}
+    <div class="sudoku-page" style="text-align: center;">
+        <h1>Sudoku solver</h1>
+        <h3 id="sudoku_iters">--</h3>
+        <table class="sudoku_table">
+            <tr>
+                <td id="cellA1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellA9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellB1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellB9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellC1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellC9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellD1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellD9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellE1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellE9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellF1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellF9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellG1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellG9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellH1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellH9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+            <tr>
+                <td id="cellI1" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI2" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI3" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI4" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI5" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI6" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI7" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI8" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+                <td id="cellI9" class="cell"><input onkeyup="moveCell(event, this)" onkeydown="return entry(event, this)" type="number" max="9" min="1" maxlength="1" class="cell_input"></td>
+            </tr>
+        </table>
+
+        <div class="solution_buttons">
+            <form method="post">{% csrf_token %}
+                <input type="button" value="Reset" onclick="clearBoard()">
+{#                <a href="{% url 'solve_sudoku' %}">#}
+{#                <a href="{% url 'sudoku' %}">#}
+                    <input type="submit" id="solve_btn" value="Solve">
+{#                onclick="parseBoard()">#}
+{#                </a>#}
+                <input type="hidden" name="nums" id="nums">
+            </form>
+        </div>
+    </div>
+{% endblock %}
