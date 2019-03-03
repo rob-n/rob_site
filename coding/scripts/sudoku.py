@@ -97,6 +97,7 @@ class SudokuSolver:
         self.solved = False
         self.count = 0
         self.possible = self.check_possible()
+        self.unique_puzzle = self.check_unique()
 
     def check_possible(self):
         """
@@ -113,6 +114,21 @@ class SudokuSolver:
             if len(peer) != len(set(peer)):
                 return False
         return True
+
+    def check_unique(self):
+        """Make sure the a unique solution is possible. 8 unique digits must be populated.
+        :return: True if unique, false otherwise.
+        """
+        lst_nums = list(self.possible_nums)
+        for row in self.rows:
+            for num in row:
+                if num in lst_nums:
+                    lst_nums.remove(num)
+
+        if len(lst_nums) <= 1:
+            return True
+        else:
+            return False
 
     def solve_puzzle(self):
         """

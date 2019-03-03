@@ -42,6 +42,7 @@ def ajax_sudoku(request):
         data['csrfmiddlewaretoken'] = csrf
         data['iterations'] = sg.count
         data['possible'] = sg.possible
+        data['unique_puzzle'] = sg.unique_puzzle
         resp = JsonResponse(data)
     except BaseException as be:
         print('nope', str(be))
