@@ -1,3 +1,5 @@
+import pandas as pd
+
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from .scripts.sudoku import SudokuGrid, SudokuSolver
@@ -28,6 +30,7 @@ def sudoku(request):
 
 def ajax_sudoku(request):
     data = {'sudoku': ''}
+    resp = JsonResponse(data)
     try:
         nums = request.POST.get('nums')
         csrf = request.POST.get('csrfmiddlewaretoken')
@@ -49,3 +52,14 @@ def ajax_sudoku(request):
         pass
     return resp
 
+
+def chart_test(request):
+    df = pd.read_csv('lotto_odds.csv')
+    labels = df['Cost'].tolist()
+    data = df['Odds'].tolist()
+    data = [int(x) for x in data]
+    # labels = [str(x) + '%' for x in labels]
+    context = {'labels': labels,
+               'data': data
+               }
+    return render(request, 'coding/coding_chart.html', context)

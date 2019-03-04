@@ -22,5 +22,6 @@ from . import views
 urlpatterns = [
     re_path('sudoku/solve_sudoku/', views.ajax_sudoku, name='solve_sudoku'),
     path('sudoku/', views.sudoku, name='sudoku'),
+    path('chart_test/', views.chart_test, name='chart_test'),
     path('', views.site_index, name='site_index'),
 ]

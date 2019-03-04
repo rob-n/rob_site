@@ -4,12 +4,16 @@
 
     <script>
         $(document).ready(function () {
+            clearBoard();
             $.ajaxSetup({
                 headers: {"X-CSRFToken": '{{csrf_token}}'}
             });
             $("#solve_btn").click(function (e) {
                 e.preventDefault();
                 parseBoard();
+                $('.cell_input').css('cursor', 'wait');
+                $('body').css('cursor','wait');
+                $("input").attr("disabled", "disabled");
                 $.ajax({
                     url: '{% url "solve_sudoku" %}',
                     type: 'POST',
@@ -20,6 +24,9 @@
                     dataType: "JSON",
                     success: function (data) {
                         ajaxPopulateBoard(data.nums);
+                        $('.cell_input').css('cursor','');
+                        $('html,body').css('cursor','');
+                        $("input").removeAttr('disabled');
                         if (data['possible'] === true) {
                             let msg = '';
                             if (data['unique_puzzle'] !== true) {
@@ -32,6 +39,9 @@
 
                     },
                     error: function (xhr, textStatus, err) {
+                        $('.cell_input').css('cursor','');
+                        $('body').css('cursor','');
+                        $("input").removeAttr('disabled');
                         console.log("readyState: " + xhr.readyState);
                         console.log("responseText: " + xhr.responseText);
                         console.log("status: " + xhr.status);
@@ -42,7 +52,7 @@
             });
         });
     </script>
-    <div class="sudoku-page" style="text-align: center;">
+    <div style="text-align: center;">
         <h1>Sudoku Solver</h1>
         <h4 id="sudoku_iters">--</h4>
         <table class="sudoku_table">

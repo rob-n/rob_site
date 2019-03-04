@@ -105,6 +105,8 @@ class SudokuSolver:
         :return: False if impossible, true if possible.
         """
         for row in self.rows:
+            if '0' in row:
+                return False
             if len(row) != len(set(row)):
                 return False
         for col in self.columns:
